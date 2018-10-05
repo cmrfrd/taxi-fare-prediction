@@ -20,5 +20,5 @@ RUN jupyter serverextension enable --py --sys-prefix jupyterlab && \
     jupyter nbextension enable codefolding/main
 
 ## Configure entrypoint and cmd
-ENTRYPOINT ["tini", "--"]
-CMD ["/usr/local/bin/start.sh", "jupyter", "lab", "--ip=0.0.0.0", "--notebook-dir=/home", "--NotebookApp.iopub_data_rate_limit=10000000 --NotebookApp.token="]
+RUN chmod 777 -R /home/jovyan/.local/
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--notebook-dir=/home/jovyan", "--NotebookApp.iopub_data_rate_limit=10000000", "--NotebookApp.token=", "--allow-root"]
