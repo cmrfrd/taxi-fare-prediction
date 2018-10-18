@@ -1,26 +1,36 @@
 FROM beakerx/beakerx
 
-## Change user to root for ease of installation
-USER root
-
 ## Install apt dependencies
+USER root
 RUN apt-get update && \
     apt-get install -y apt-transport-https \
-    	    	       build-essential
+    	    	       build-essential \
+                       sudo
 
-## Install pip dependencies
-RUN conda install -c pyviz geoviews nodejs
+## Make default beakerx user sudoer
+RUN echo "beakerx ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
+USER beakerx
+
+## Install python dependencies
+RUN bash -c "source activate beakerx"
+RUN conda install -n beakerx -c pyviz geoviews nodejs && \
+    conda install -n beakerx -c conda-forge nodejs pip
 ADD requirements.txt /requirements.txt
-RUN pip install --upgrade pip && \
-    pip install -r /requirements.txt
+RUN pip install --user -r /requirements.txt
 
-## Configure jupyterlab
-RUN jupyter serverextension enable --py --sys-prefix jupyterlab && \
-    jupyter labextension install @pyviz/jupyterlab_pyviz && \
-    jupyter contrib nbextension install --system       && \
-    jupyter nbextension enable --py --sys-prefix widgetsnbextension && \
-    jupyter nbextension enable codefolding/main
+## Set permissions for beakerx for npm installations
+RUN sudo chown beakerx:beakerx -R \
+	/opt/conda/etc/\
+	/home/beakerx/.npm\
+	/home/beakerx/.config
+
+RUN bash -c "\
+	source activate beakerx;\
+	jupyter labextension install @pyviz/jupyterlab_pyviz &&\
+        jupyter labextension install @jupyter-widgets/jupyterlab-manager &&\
+	jupyter nbextension enable --py widgetsnbextension &&\
+	jupyter nbextension enable codefolding/main"
 
 ## Configure entrypoint and cmd
-RUN chmod 777 -R /home/beakerx/.jupyter/ /home/beakerx/.local/ /home/beakerx/.config/
-CMD ["/usr/local/bin/start.sh",  "jupyter", "lab", "--ip=0.0.0.0", "--notebook-dir=/home/beakerx/work", "--NotebookApp.iopub_data_rate_limit=10000000", "--NotebookApp.token=", "--allow-root"]
+ENTRYPOINT [ "bash", "-c" ]
+CMD ["source activate beakerx && /usr/local/bin/start.sh jupyter lab --ip=0.0.0.0 --notebook-dir=/home/beakerx/work --NotebookApp.iopub_data_rate_limit=10000000 --NotebookApp.token= --allow-root"]
