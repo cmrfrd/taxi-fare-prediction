@@ -1,4 +1,4 @@
-version: '2'
+version: "3"
 services:
   
   spark-master:
@@ -19,7 +19,7 @@ services:
       - "8081:8081"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-
+          
   jupyter:
     image: jupyter.taxidata:latest
     build:
@@ -30,3 +30,4 @@ services:
       - ./:/home/jovyan/work
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
+      - "DASK_SCHEDULER=scheduler:8786"
