@@ -32,7 +32,7 @@ RUN useradd jovyan --create-home &&\
 USER jovyan
 
 ## Install python based dependencies in conda env
-RUN conda create -y -n jovyan 'python>=3' nodejs pandas openjdk maven py4j
+RUN conda create -y -n jovyan 'python=3.6' nodejs pandas openjdk maven py4j
 RUN conda config --env --add pinned_packages 'openjdk >8.0.121'
 RUN conda install -y -n jovyan -c conda-forge ipywidgets jupyterhub jupyterlab pyzmq pytest requests pip beakerx
 RUN conda install -n jovyan -c pyviz/label/dev pyviz
